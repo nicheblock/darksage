@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EX_FLIX - Who's Watching?</title>
+    <style>
+        body {
+            background-color: #141414;
+            color: #ffffff;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .logo {
+            color: #E50914;
+            font-size: 5rem;
+            font-weight: bold;
+            letter-spacing: -2px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            font-weight: 400;
+            margin-bottom: 40px;
+            color: #fff;
+        }
+
+        .profile-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+        }
+
+        .profile-card {
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 150px;
+            cursor: pointer;
+        }
+
+        .profile-icon {
+            width: 150px;
+            height: 150px;
+            border-radius: 4px;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid transparent;
+            transition: border 0.2s ease, transform 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .profile-name {
+            margin-top: 15px;
+            color: #808080;
+            font-size: 1.2rem;
+            transition: color 0.2s ease;
+        }
+
+        .profile-card:hover .profile-icon {
+            border: 3px solid #ffffff;
+            transform: scale(1.05);
+        }
+
+        .profile-card:hover .profile-name {
+            color: #ffffff;
+        }
+
+        @media (max-width: 600px) {
+            .logo { font-size: 3rem; }
+            h2 { font-size: 1.5rem; }
+            .profile-icon { width: 120px; height: 120px; }
+            .profile-card { width: 120px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo">NICHEFLIX</div>
+    <h2>What will it be today?</h2>
+
+    <div class="profile-container">
+        <div class="profile-card" onclick="launchBlank('https://raw.githubusercontent.com/nicheblock/darksage/refs/heads/main/movies')">
+            <div class="profile-icon" style="background-image: url('https://lumiere-a.akamaihd.net/v1/images/au_marvel_avengersendgame_hero_m_f8ba68d1.jpeg?region=31,0,688,688');"></div>
+            <div class="profile-name">Movies🎬</div>
+        </div>
+
+        <div class="profile-card" onclick="launchBlank('https://raw.githubusercontent.com/nicheblock/darksage/refs/heads/main/shows')">
+            <div class="profile-icon" style="background-image: url('https://m.media-amazon.com/images/S/pv-target-images/3161d87187e01c5cc15368918bc544cf27b1d684941e4b4bcfdd1fcf983f83eb._SX1080_FMpng_.png');"></div>
+            <div class="profile-name">Shows📺</div>
+        </div>
+
+        <a href="https://sites.google.com/view/peripheria-ex/music" class="profile-card">
+            <div class="profile-icon" style="background-image: url('https://media.tenor.com/eZRtz9-Ic30AAAAM/angry-bird.gif');"></div>
+            <div class="profile-name">Music🎵</div>
+        </a>
+
+        <a href="https://sites.google.com/view/peripheria-ex/animemanga" class="profile-card">
+            <div class="profile-icon" style="background-image: url('https://images.unsplash.com/photo-1578632292335-df3abbb0d586?q=80&w=1000&auto=format&fit=crop');"></div>
+            <div class="profile-name">Manga/Anime🌸</div>
+        </a>
+    </div>
+
+    <script>
+        function launchBlank(url) {
+            fetch(url)
+                .then(res => res.text())
+                .then(code => {
+                    const win = window.open("about:blank", "_blank");
+                    if (win) {
+                        win.document.write(code);
+                        win.document.close();
+                    } else {
+                        alert("Pop-up blocked! Please allow pop-ups for this site.");
+                    }
+                })
+                .catch(err => console.error("Error loading content:", err));
+        }
+    </script>
+</body>
+</html>
