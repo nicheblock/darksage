@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PERIPHERIA EX</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKoAAACUCAMAAAA02EJtAAAAA1BMVEUAAACnej3aAAAAL0lEQVR4nO3BgQAAAADDoPlTX+AIVQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMA3YtwAAbrUBuUAAAAASUVORK5CYII=') no-repeat center center fixed; 
+            background-size: cover;
+            color: #ffffff; 
+            font-family: 'IBM Plex Sans', sans-serif; 
+            margin: 0; display: flex; justify-content: center; align-items: center; 
+            height: 100vh; overflow: hidden; background-color: #000; 
+        }
+        #loading-screen { 
+            text-align: center; background: rgba(10, 10, 12, 0.9); padding: 50px; border-radius: 50%; 
+            width: 450px; height: 450px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border: 2px solid #000000; box-shadow: 0 0 40px #000000;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div style="font-size: 20px; text-shadow: 0 0 10px #ffffff; color: #ffffff;">PERIPHERIA<br>EX</div>
+        <div style="width: 40px; height: 40px; border: 3px solid transparent; border-top-color: #000000; border-radius: 50%; animation: spin 1s linear infinite; margin-top: 20px;"></div>
+    </div>
+    <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+
+<script>
+    const payloadFetch = fetch("https://cdn.jsdelivr.net/gh/freebuisness/freebuisness.github.io@main/singlefile.html?t=" + Date.now()).then(r => r.text());
+    const cinematicDelay = new Promise(resolve => setTimeout(resolve, 3000));
+
+    Promise.all([payloadFetch, cinematicDelay]).then(([html]) => {
+        // Remove math text
+        let modifiedHtml = html.replace(/gn-math/gi, ""); 
+        document.documentElement.innerHTML = modifiedHtml;
+
+        // --- THE TITLE FIX: Create a real container that pushes content down ---
+        const titleWrapper = document.createElement('div');
+        titleWrapper.id = 'peripheria-header-block';
+        titleWrapper.innerHTML = '<h1 id="peripheria-title-text">PERIPHERIA<br>EX</h1>';
+        document.body.prepend(titleWrapper);
+
+        const styleOverride = document.createElement('style');
+        styleOverride.innerHTML = `
+            @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans&display=swap');
+            
+            /* FORCE WHITE TEXT EVERYWHERE */
+            * { 
+                font-family: 'IBM Plex Sans', sans-serif !important; 
+                color: #ffffff !important;
+                background-image: none !important;
+            }
+
+            body, html { 
+                background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKoAAACUCAMAAAA02EJtAAAAA1BMVEUAAACnej3aAAAAL0lEQVR4nO3BgQAAAADDoPlTX+AIVQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMA3YtwAAbrUBuUAAAAASUVORK5CYII=') no-repeat center center fixed !important; 
+                background-size: cover !important; 
+                display: block !important;
+            }
+
+            /* 1. HEADER BLOCK: Pushes original site content down by 200px */
+            #peripheria-header-block {
+                width: 100% !important;
+                height: 200px !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                background: transparent !important;
+                position: relative !important;
+                z-index: 9999 !important;
+            }
+
+            #peripheria-title-text {
+                text-align: center !important;
+                font-size: 32px !important;
+                text-shadow: 0 0 20px #ffffff !important;
+                color: #ffffff !important;
+                margin: 0 !important;
+            }
+
+            /* 2. GAME PLAYER HARD BLACKOUT (TARGETS ALL KNOWN PLAYER TAGS) */
+            iframe, canvas, embed, object, 
+            [id*="game"], [class*="game"], [class*="player"], 
+            .modal-content, .play-area, #content {
+                background: #000000 !important;
+                background-color: #000000 !important;
+            }
+
+            /* 3. ICON & CIRCLE FIX: Bright White Glow & Scale */
+            img, .game-icon, .thumbnail { 
+                border-radius: 50% !important; 
+                transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+                border: none !important;
+                background: transparent !important;
+                object-fit: cover !important;
+            }
+
+            img:hover, .game-icon:hover, .thumbnail:hover {
+                transform: scale(1.2) !important;
+                box-shadow: 0 0 20px 10px #ffffff, 0 0 40px 20px #000000 !important;
+                z-index: 99999 !important;
+            }
+
+            /* 4. NUKE THE INVISIBLE BOXES (Force transparency and visibility) */
+            div, section, article, a, li, span {
+                background-color: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                overflow: visible !important; /* This stops the circles from being cut off */
+            }
+
+            /* Keep Search Bars and Buttons visible but stylized */
+            input, select, button {
+                background: rgba(10, 10, 12, 0.9) !important;
+                border: 2px solid #000000 !important;
+                padding: 10px !important;
+                border-radius: 8px !important;
+                overflow: hidden !important; /* Buttons stay boxes */
+                color: #ffffff !important;
+            }
+            
+            /* Ensure placeholders are also visible if needed, but keeping primary text white */
+            ::placeholder {
+                color: #cccccc !important;
+            }
+        `;
+        document.head.appendChild(styleOverride);
+
+        // RE-RUN THE ORIGINAL SCRIPTS
+        document.documentElement.querySelectorAll('script').forEach(oldScript => {
+            const newScript = document.createElement('script');
+            if (oldScript.src) newScript.src = oldScript.src;
+            else newScript.textContent = oldScript.textContent;
+            document.body.appendChild(newScript);
+        });
+
+        // --- THE MASTER ENFORCER LOOP ---
+        // Runs every 300ms to catch dynamic elements loading in
+        setInterval(() => {
+            document.querySelectorAll('img, .game-icon').forEach(el => {
+                el.style.setProperty('border-radius', '50%', 'important');
+                
+                // Climb up 5 parents and force them to be visible so icons aren't cut
+                let p = el.parentElement;
+                for(let i=0; i<5; i++) {
+                    if(!p) break;
+                    p.style.setProperty('overflow', 'visible', 'important');
+                    p.style.setProperty('background', 'transparent', 'important');
+                    p.style.setProperty('border', 'none', 'important');
+                    p = p.parentElement;
+                }
+            });
+
+            // Target the specific game container in your screenshots to force it BLACK
+            const gameIframe = document.querySelector('iframe');
+            if(gameIframe) {
+                gameIframe.style.setProperty('background', '#000', 'important');
+                if(gameIframe.parentElement) {
+                    gameIframe.parentElement.style.setProperty('background', '#000', 'important');
+                }
+            }
+        }, 300);
+    });
+</script>
+</body>
+</html>
