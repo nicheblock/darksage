@@ -1,0 +1,280 @@
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{background:#141414;min-height:600px;font-family:'Trebuchet MS',sans-serif;color:#fff;padding-bottom:3rem}
+.hdr{background:linear-gradient(180deg,#000 0%,transparent 100%);padding:.9rem 1.4rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:20}
+.logo{font-size:1.5rem;font-weight:900;color:#e50914;letter-spacing:-1px;flex-shrink:0}
+.srch{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:4px;padding:5px 11px;color:#fff;font-size:13px;width:160px;outline:none}
+.srch::placeholder{color:rgba(255,255,255,0.35)}
+.cnt{font-size:12px;color:rgba(255,255,255,0.35);margin-left:auto}
+.player-area{position:relative;background:#000;width:100%}
+.plbl{position:absolute;top:10px;left:14px;font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:1px;text-transform:uppercase;z-index:2}
+.pcls{position:absolute;top:8px;right:12px;background:rgba(255,255,255,0.12);border:none;color:#fff;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:14px;line-height:26px;text-align:center;z-index:2;display:none}
+.pcls.on{display:block}
+.pifr{width:100%;height:0;border:none;transition:height .3s}
+.pifr.on{height:360px}
+.pph{width:100%;height:160px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:rgba(255,255,255,0.18);font-size:13px}
+.sectitle{padding:1rem 1.4rem .5rem;font-size:.95rem;font-weight:700;color:#e5e5e5}
+.sectitle small{font-weight:400;color:rgba(255,255,255,0.35);font-size:.78rem;margin-left:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;padding:0 1.4rem}
+.card{position:relative;border-radius:5px;overflow:hidden;cursor:pointer;width:100%;padding-top:150%;background:#1a1a2e;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:scale(1.06);box-shadow:0 8px 30px rgba(0,0,0,0.9);z-index:3}
+.card.active{outline:3px solid #e50914}
+.card-inner{position:absolute;inset:0}
+.card-inner img{width:100%;height:100%;object-fit:cover;display:none}
+.card-inner img.loaded{display:block}
+.card-fb{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px;text-align:center;background:#1c1c2e}
+.card-fb-icon{font-size:22px}
+.card-fb-txt{font-size:9px;color:rgba(255,255,255,0.55);font-weight:700;line-height:1.3}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.card-shimmer{position:absolute;inset:0;background:linear-gradient(90deg,#1a1a2e 0%,#2d2d50 50%,#1a1a2e 100%);background-size:800px 100%;animation:shimmer 1.4s infinite linear}
+.card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.95) 0%,transparent 55%);opacity:0;transition:opacity .15s;display:flex;flex-direction:column;justify-content:flex-end;padding:7px;pointer-events:none}
+.card:hover .card-overlay,.card.active .card-overlay{opacity:1}
+.card-play{width:22px;height:22px;background:#e50914;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:4px}
+.card-ttl{font-size:9px;color:#fff;font-weight:700;line-height:1.3}
+.nores{padding:2rem;text-align:center;color:rgba(255,255,255,0.28);font-size:14px;display:none}
+.opnlnk{margin-left:8px;padding:3px 10px;background:#e50914;color:#fff;font-size:11px;border-radius:3px;text-decoration:none;font-weight:700}
+.status-bar{padding:4px 1.4rem;font-size:11px;color:rgba(255,255,255,0.3)}
+</style>
+
+<div class="wrap">
+  <div class="hdr">
+    <div class="logo">▶ Peripheria</div>
+    <input class="srch" type="text" placeholder="Search movies…" id="srch" oninput="doFilter()">
+    <span class="cnt" id="cnt"></span>
+  </div>
+  <div class="player-area">
+    <span class="plbl" id="plbl">Now playing</span>
+    <button class="pcls" id="pcls" onclick="closePlayer()">✕</button>
+    <div class="pph" id="pph">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+      <span>Pick a movie to watch</span>
+    </div>
+    <iframe class="pifr" id="pifr" allow="autoplay" allowfullscreen></iframe>
+  </div>
+  <div class="status-bar" id="statusbar">Loading posters…</div>
+  <div class="sectitle">All Movies<small id="seccnt"></small></div>
+  <div class="grid" id="grid"></div>
+  <div class="nores" id="nores">No movies found</div>
+</div>
+
+<script>
+const MOVIES=[
+  {id:"1i7KQZsuzhuEI81tPYXfy4Tq5dZQkUnsd",title:"The Avengers",wt:"The Avengers (2012 film)",icon:"🦸"},
+  {id:"1xwOksgjM_2IeF4PvFqMbl76idj5cPBwh",title:"Avengers: Age of Ultron",wt:"Avengers: Age of Ultron",icon:"🤖"},
+  {id:"1qtClTlkaeMc5Yvg0F7GnWjMiNKslHUh2",title:"Avengers: Infinity War",wt:"Avengers: Infinity War",icon:"💎"},
+  {id:"1ehi9tidOYHb1RMldxtBw6-L3UhyEKVm9",title:"Avengers: Endgame",wt:"Avengers: Endgame",icon:"⏱️"},
+  {id:"1QOIBXMPZk86AVo0jI-zXYAuJGiWRUnNg",title:"Iron Man",wt:"Iron Man (film)",icon:"🔴"},
+  {id:"1tESCAvTcUvbjyGB_x4bPahm9ZsBCs33u",title:"Iron Man 2",wt:"Iron Man 2",icon:"🔴"},
+  {id:"1H0nZ4WOP6B8iWU8YoMjbnbzrlDJ1YSan",title:"Iron Man 3",wt:"Iron Man 3",icon:"🔴"},
+  {id:"1sd8H5oqtZwgNj1x54L2RdDOXxgUP50Yx",title:"Captain America: The First Avenger",wt:"Captain America: The First Avenger",icon:"🛡️"},
+  {id:"1iwnluIU4neLKqcJt4q5n2YhZLJbJbRkI",title:"Captain America: The Winter Soldier",wt:"Captain America: The Winter Soldier",icon:"🛡️"},
+  {id:"1zcOWY_OTVctnY1sHg1KRjhDVls_3ebWs",title:"Captain America: Civil War",wt:"Captain America: Civil War",icon:"🛡️"},
+  {id:"1sP4Xj_JlXuvSLJzxYl6RgiG3ljUqqa6n",title:"Thor",wt:"Thor (film)",icon:"⚡"},
+  {id:"10r1UB_bpBRfG8HykNJ2j63nwUawm-3FS",title:"Thor: The Dark World",wt:"Thor: The Dark World",icon:"⚡"},
+  {id:"1BsmXOkJBD9RVJ8kxJNG91bV71gpxy1ye",title:"Thor: Ragnarok",wt:"Thor: Ragnarok",icon:"⚡"},
+  {id:"19m3GZmoLNC8qkmFs5d3yMNGOCB1-en4d",title:"Thor: Love and Thunder",wt:"Thor: Love and Thunder",icon:"⚡"},
+  {id:"1_qJqk2Ss1f45puz3xGQcdD1NxM3ipupj",title:"Ant-Man",wt:"Ant-Man (film)",icon:"🐜"},
+  {id:"1AstKQ5KLX94k7RFIlsu2St9um8sS_w_M",title:"Ant-Man and the Wasp",wt:"Ant-Man and the Wasp",icon:"🐜"},
+  {id:"1AW3Zm8256tzZ-37lmgYmIGse4knu8IdA",title:"Ant-Man and the Wasp: Quantumania",wt:"Ant-Man and the Wasp: Quantumania",icon:"🐜"},
+  {id:"1cBhl_4yyqtXZXvTMaAsS3zFBC076lHUe",title:"Fantastic Four: First Steps",wt:"The Fantastic Four: First Steps",icon:"4️⃣"},
+  {id:"1J14NEVWrX9CWMun8YLb-2JDKLo2Qxcb-",title:"Captain Marvel",wt:"Captain Marvel (film)",icon:"⭐"},
+  {id:"1fGvajmEO8RarIucX9KCTG_Q6NDy2-gaa",title:"Black Panther",wt:"Black Panther (film)",icon:"🐾"},
+  {id:"1G4C_sOWW3IEih7LVTGmeLpm9TaoVaQMq",title:"Black Panther: Wakanda Forever",wt:"Black Panther: Wakanda Forever",icon:"🐾"},
+  {id:"1eej-jjjZXMT1SYnCGh121GETnGzRNwFX",title:"Eternals",wt:"Eternals (film)",icon:"✨"},
+  {id:"1mHPj09FyQK4RQCBaNp6QdQGMPprCxyhb",title:"Doctor Strange: Multiverse of Madness",wt:"Doctor Strange in the Multiverse of Madness",icon:"🔮"},
+  {id:"1RRlgtnQiIZEm8mgF45J0iOa6S3-ArDdE",title:"Black Widow",wt:"Black Widow (2021 film)",icon:"🕷️"},
+  {id:"0B-uFeCO4yCFIZXNnLUg3cVdiU3M",title:"Thunderbolts",wt:"Thunderbolts* (film)",icon:"⚡"},
+  {id:"1pFavPs7Mi9rx_BrAjxbeHNWg7ClAB2_K",title:"Guardians of the Galaxy",wt:"Guardians of the Galaxy (film)",icon:"🚀"},
+  {id:"14BaJhmDRr3veoH436CKdPDp9r-j5214I",title:"Guardians of the Galaxy Vol. 2",wt:"Guardians of the Galaxy Vol. 2",icon:"🚀"},
+  {id:"1BJTsBEOeTbpv3fqU0ejzb44aQGrdLhyN",title:"Guardians of the Galaxy Vol. 3",wt:"Guardians of the Galaxy Vol. 3",icon:"🚀"},
+  {id:"1vi0w7U65XeR-u00AQ8uS9s3C-IoiV-_1",title:"Spider-Man",wt:"Spider-Man (2002 film)",icon:"🕸️"},
+  {id:"1Xf8xZcY3kneGFln8NPsQMt7CLtmGhEeD",title:"Spider-Man 2",wt:"Spider-Man 2",icon:"🕸️"},
+  {id:"1GLmG41OhRt9YfRa4r5nwvw8hCIS1Sofv",title:"Spider-Man 3",wt:"Spider-Man 3",icon:"🕸️"},
+  {id:"1DX2fbF9F1fA1LfgDqBwX3RSuix7oShpH",title:"The Amazing Spider-Man",wt:"The Amazing Spider-Man (film)",icon:"🕸️"},
+  {id:"1QxSURVJ3CzrTMQtxs5KnPh7apxF4nkOe",title:"The Amazing Spider-Man 2",wt:"The Amazing Spider-Man 2",icon:"🕸️"},
+  {id:"1mIHsA4xZt4KRWnzJr6CPNtuOXDhrh9NH",title:"Spider-Man: Homecoming",wt:"Spider-Man: Homecoming",icon:"🕸️"},
+  {id:"19nLWGgNcqMRMukqsxiIl4kQ2ItC8nvtZ",title:"Spider-Man: Far From Home",wt:"Spider-Man: Far From Home",icon:"🕸️"},
+  {id:"1Oi2_W1aZ6fgCqlXwg4RpaZHnY19KV_eI",title:"Spider-Man: No Way Home",wt:"Spider-Man: No Way Home",icon:"🕸️"},
+  {id:"1iRN197XeJCQnZGza599ZTXsayEG1mdRB",title:"Spider-Man: Into the Spider-Verse",wt:"Spider-Man: Into the Spider-Verse",icon:"🌀"},
+  {id:"1N6kL0SF4qR6wFpwfGIZUZjFnz3lQDGGz",title:"Spider-Man: Across the Spider-Verse",wt:"Spider-Man: Across the Spider-Verse",icon:"🌀"},
+  {id:"1XM-MEdYUt9H5p6IpcuEoZQ6-LUImO-8M",title:"Morbius",wt:"Morbius (film)",icon:"🦇"},
+  {id:"1C6aUcmJeLpm8ysdYwnt7HRZFAT6k0oQs",title:"Kraven the Hunter",wt:"Kraven the Hunter (film)",icon:"🦁"},
+  {id:"1BIJIiG8fdpyudl-1vXHIU3TBb3XMXJaa",title:"Venom",wt:"Venom (2018 film)",icon:"🖤"},
+  {id:"1nDgCNAuFgSI6fDKbRZFkDhzViib1ixYS",title:"Venom: Let There Be Carnage",wt:"Venom: Let There Be Carnage",icon:"🩸"},
+  {id:"1u0ZRN7s8rgAMYtvnGf3zTjpM7Fu6TmW_",title:"X-Men",wt:"X-Men (film)",icon:"🧬"},
+  {id:"1lEszWnr2BinTfzBGqtoDV1W9wMIlTQtb",title:"X2: X-Men United",wt:"X2 (film)",icon:"🧬"},
+  {id:"16dO2t6nMYzRFTKGBVByMPYtru6kwix7H",title:"X-Men: The Last Stand",wt:"X-Men: The Last Stand",icon:"🧬"},
+  {id:"1q0Jof59Il_So2z5Q38ANn55qB2GCpOx3",title:"X-Men: Days of Future Past",wt:"X-Men: Days of Future Past",icon:"🧬"},
+  {id:"1cVMCqyg7byeajsDkn4cyHQe7SSLfxVPL",title:"X-Men Origins: Wolverine",wt:"X-Men Origins: Wolverine",icon:"🐺"},
+  {id:"1Z9fJZ-jaWWpoEPa2CTIqN07ugZiyIuD4",title:"The Wolverine",wt:"The Wolverine (film)",icon:"🐺"},
+  {id:"1IZNQlKBJi5HwRJDokQ-YuxfteFKgLZI5",title:"The New Mutants",wt:"The New Mutants (film)",icon:"🧬"},
+  {id:"1P3AU9onyXEKK03hRH63SKPoHbjPwMOFB",title:"Deadpool",wt:"Deadpool (film)",icon:"💀"},
+  {id:"13ZLgr8tBzOq3ZuFHbEf5fDwev9jK_pwy",title:"Deadpool 2",wt:"Deadpool 2",icon:"💀"},
+  {id:"1TP3PH5br78DxrdNUDoH0J0ciJQJl804q",title:"Deadpool & Wolverine",wt:"Deadpool & Wolverine",icon:"💀"},
+  {id:"1D-T-C4PNPbZ61wiHqXgQlQqYy_NTcsKa",title:"Star Wars: A New Hope",wt:"Star Wars (film)",icon:"⭐"},
+  {id:"0BxvqXivT-hg5d2VmZDdsNlBNUzQ",title:"Star Wars: The Empire Strikes Back",wt:"The Empire Strikes Back",icon:"🌑"},
+  {id:"0BzeqnwcztH5cRERqUGl6TFkyc3M",title:"Star Wars: Return of the Jedi",wt:"Return of the Jedi",icon:"🐻"},
+  {id:"1vZ4S9-QrTOUZDRzC6MtATL8aDEOYrJgF",title:"Star Wars: The Phantom Menace",wt:"Star Wars: Episode I \u2013 The Phantom Menace",icon:"⚔️"},
+  {id:"1XUjU4fhDH7qpPEg_me8vlMba1uelRIwj",title:"Star Wars: Attack of the Clones",wt:"Star Wars: Episode II \u2013 Attack of the Clones",icon:"⚔️"},
+  {id:"1wcE3D19t54BnWtLNl5cruklfPVPh92nY",title:"Star Wars: Revenge of the Sith",wt:"Star Wars: Episode III \u2013 Revenge of the Sith",icon:"🔥"},
+  {id:"1B_eiKUt7N5OxyUN9c37LG0pxcErP4yJ6",title:"Star Wars: The Clone Wars",wt:"Star Wars: The Clone Wars (film)",icon:"⚔️"},
+  {id:"1vCdep3QXu8GE9IaNUdVmCGLiG24kFrWb",title:"Star Wars: The Force Awakens",wt:"Star Wars: The Force Awakens",icon:"💫"},
+  {id:"1wqi9Wk--koq0SqRkoVZWXLVJBtABkjPy",title:"Star Wars: The Last Jedi",wt:"Star Wars: The Last Jedi",icon:"⭐"},
+  {id:"10cwJT2ssiHVBeRWMdEVHKt0bhk8PVOHY",title:"Solo: A Star Wars Story",wt:"Solo: A Star Wars Story",icon:"🎲"},
+  {id:"1MAaR6vGifjMCr7A5afVP7hW2B3rndLhv",title:"Star Wars: The Rise of Skywalker",wt:"Star Wars: The Rise of Skywalker",icon:"⭐"},
+  {id:"1OsyF2LKJqjtv0b2Xd9GWOLcYkzny3VZo",title:"Transformers",wt:"Transformers (film)",icon:"🤖"},
+  {id:"1OyO1OdhtfwR883Uvi0QPP5iooGcxTVSY",title:"Transformers: Revenge of the Fallen",wt:"Transformers: Revenge of the Fallen",icon:"🤖"},
+  {id:"1dzX6Pl4qTUssWJTVVZdL1z3gipIYRvD3",title:"Transformers: Dark of the Moon",wt:"Transformers: Dark of the Moon",icon:"🌙"},
+  {id:"1s50asvSbX5yrIK2UItleN6TfxyykRo7m",title:"Transformers: Age of Extinction",wt:"Transformers: Age of Extinction",icon:"🦕"},
+  {id:"13qJ5Qz24eRdr0TFJWSBBHlLSOW_ncH9A",title:"Transformers: The Last Knight",wt:"Transformers: The Last Knight",icon:"⚔️"},
+  {id:"1Nnkb35gi9f-jc4LvwVDUq8MTLur7mK3L",title:"Bumblebee",wt:"Bumblebee (film)",icon:"🐝"},
+  {id:"1q5wcbuy536XQKTBAF7ImApMAlNMVHM5T",title:"Transformers: Rise of the Beasts",wt:"Transformers: Rise of the Beasts",icon:"🦍"},
+  {id:"1temXH9CFHCd7gjIsu8TMCFiqxMy8jXfj",title:"Transformers One",wt:"Transformers One",icon:"🤖"},
+  {id:"1h1hi-3Hn1awll6u51WQnGjkHqm3uJejF",title:"A Minecraft Movie",wt:"A Minecraft Movie",icon:"⛏️"},
+  {id:"1cXe1a5ueZU9U_QZBU1-XpgNK0s6wi4o6",title:"The Super Mario Bros. Movie",wt:"The Super Mario Bros. Movie",icon:"🍄"},
+  {id:"1BhQDbp8lXDwS-Q-pq4axufeZI-5TklpR",title:"Five Nights at Freddy's",wt:"Five Nights at Freddy's (film)",icon:"🐻"},
+  {id:"1IzaFo-PmeI3AiQ_qoDdjCbUdiu8Ohs-w",title:"TMNT: Mutant Mayhem",wt:"Teenage Mutant Ninja Turtles: Mutant Mayhem",icon:"🐢"},
+  {id:"1HfyVEE2oFq1X8dHMWr5xJmMyHo79l7iG",title:"Pokémon Detective Pikachu",wt:"Detective Pikachu (film)",icon:"⚡"},
+  {id:"1dUxJw1LdOKB4RxNkQLuxas9JJbaJPGlz",title:"Mortal Kombat",wt:"Mortal Kombat (2021 film)",icon:"🥊"},
+  {id:"1zLFZE5jEzvjRSAawv9gOk-E5FYhsYblJ",title:"Sonic the Hedgehog",wt:"Sonic the Hedgehog (film)",icon:"💙"},
+  {id:"1RtaN8_Xsodf4Ub5K_yRp6eOx62tbj7Ap",title:"Sonic the Hedgehog 2",wt:"Sonic the Hedgehog 2 (film)",icon:"💙"},
+  {id:"17VPLw23bmvSYSa7C9fyiB9c3iXB09PNN",title:"Sonic the Hedgehog 3",wt:"Sonic the Hedgehog 3 (film)",icon:"💙"},
+  {id:"1zECVNreFAl8LNGcOrlPqtMzw_Su1S3AC",title:"It",wt:"It (2017 film)",icon:"🎈"},
+  {id:"1P8z8U0j5UHxqTq0taTj18TgG6nZwSKYd",title:"It Chapter Two",wt:"It Chapter Two",icon:"🎈"},
+  {id:"1i8w5FlmSFp3hixLRHeodPPtQq5r5VDQh",title:"The Black Phone 2",wt:"The Black Phone 2",icon:"☎️"},
+  {id:"1gzsZEVTNEb93tSa0nuzlpR2n20D4Dyx9",title:"Scream",wt:"Scream (1996 film)",icon:"😱"},
+  {id:"1CsIZrKGXn557DdOJrdz5ty7nkg0i4CWR",title:"Scream 2",wt:"Scream 2",icon:"😱"},
+  {id:"10LUlcX6Hu9pn3c3xmPlfJOf20Qjwgxq_",title:"Scream 3",wt:"Scream 3",icon:"😱"},
+  {id:"1aeYtz38ljtxCCtuVs4x0zuUh2TWKf-K6",title:"Scream 4",wt:"Scream 4",icon:"😱"},
+  {id:"1YFYuZeG8EXxNkPdB7jIIGOFm7ULi349r",title:"Scream (2022)",wt:"Scream (2022 film)",icon:"😱"},
+  {id:"1vLFTFzlvu9TJXbcL40gnag9Xart3pKQI",title:"American Psycho",wt:"American Psycho (film)",icon:"🔪"},
+  {id:"1K0v8NXcyS-ShrwaNpyvQ-1X-RbgUBihO",title:"The Shawshank Redemption",wt:"The Shawshank Redemption",icon:"🏛️"}
+];
+
+const imageCache={};
+let activeId=null;
+let currentList=[...MOVIES];
+
+function previewUrl(id){return`https://drive.google.com/file/d/${id}/preview`}
+function driveUrl(id){return`https://drive.google.com/file/d/${id}/view`}
+
+async function fetchWikiBatch(movies){
+  const titles=movies.map(m=>m.wt).join('|');
+  const url=`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&pithumbsize=500&format=json&origin=*&redirects=1&titles=${encodeURIComponent(titles)}`;
+  try{
+    const r=await fetch(url);
+    const data=await r.json();
+    const normMap={};
+    for(const n of(data.query.normalized||[])) normMap[n.from]=n.to;
+    for(const rd of(data.query.redirects||[])) normMap[rd.from]=rd.to;
+    const byTitle={};
+    for(const pg of Object.values(data.query.pages||{})){
+      if(pg.thumbnail) byTitle[pg.title]=pg.thumbnail.source;
+    }
+    for(const m of movies){
+      const canonical=normMap[m.wt]||m.wt;
+      imageCache[m.wt]=byTitle[canonical]||byTitle[m.wt]||null;
+    }
+  }catch(e){
+    for(const m of movies) imageCache[m.wt]=null;
+  }
+}
+
+function applyImage(m){
+  const card=document.getElementById('c-'+m.id);
+  if(!card) return;
+  const shimmer=card.querySelector('.card-shimmer');
+  const img=card.querySelector('img');
+  const fb=card.querySelector('.card-fb');
+  const src=imageCache[m.wt];
+  if(shimmer) shimmer.remove();
+  if(src){
+    img.onload=()=>img.classList.add('loaded');
+    img.onerror=()=>{img.style.display='none';fb.style.display='flex';};
+    img.src=src;
+  } else {
+    img.style.display='none';
+    fb.style.display='flex';
+  }
+}
+
+async function loadAllImages(){
+  const batchSize=45;
+  const status=document.getElementById('statusbar');
+  let loaded=0;
+  for(let i=0;i<MOVIES.length;i+=batchSize){
+    const batch=MOVIES.slice(i,i+batchSize);
+    await fetchWikiBatch(batch);
+    batch.forEach(m=>applyImage(m));
+    loaded+=batch.length;
+    status.textContent=`Loaded ${Math.min(loaded,MOVIES.length)} / ${MOVIES.length} posters`;
+  }
+  status.textContent='';
+}
+
+function buildGrid(list){
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  list.forEach(m=>{
+    const card=document.createElement('div');
+    card.className='card'+(m.id===activeId?' active':'');
+    card.id='c-'+m.id;
+    card.onclick=()=>playMovie(m.id,m.title);
+    const inner=document.createElement('div');
+    inner.className='card-inner';
+    const shimmer=document.createElement('div');
+    shimmer.className='card-shimmer';
+    const img=document.createElement('img');
+    img.alt=m.title;
+    img.loading='lazy';
+    const fb=document.createElement('div');
+    fb.className='card-fb';
+    fb.style.display='none';
+    fb.innerHTML=`<div class="card-fb-icon">${m.icon}</div><div class="card-fb-txt">${m.title}</div>`;
+    const overlay=document.createElement('div');
+    overlay.className='card-overlay';
+    overlay.innerHTML=`<div class="card-play"><svg width="8" height="10" viewBox="0 0 8 10" fill="#fff"><polygon points="0,0 8,5 0,10"/></svg></div><div class="card-ttl">${m.title}</div>`;
+    inner.appendChild(shimmer);
+    inner.appendChild(img);
+    inner.appendChild(fb);
+    inner.appendChild(overlay);
+    card.appendChild(inner);
+    grid.appendChild(card);
+    if(imageCache[m.wt]!==undefined) applyImage(m);
+  });
+  document.getElementById('seccnt').textContent=` \u2014 ${list.length} titles`;
+  document.getElementById('cnt').textContent=`${list.length} movies`;
+}
+
+function playMovie(id,title){
+  document.querySelector('.card.active')?.classList.remove('active');
+  activeId=id;
+  document.getElementById('c-'+id)?.classList.add('active');
+  const iframe=document.getElementById('pifr');
+  iframe.src=previewUrl(id);
+  iframe.classList.add('on');
+  document.getElementById('pph').style.display='none';
+  document.getElementById('pcls').classList.add('on');
+  document.getElementById('plbl').innerHTML=`Now playing &nbsp;&bull;&nbsp; <b style="color:#e50914">${title}</b><a href="${driveUrl(id)}" target="_blank" class="opnlnk">Open in Drive \u2197</a>`;
+}
+
+function closePlayer(){
+  const iframe=document.getElementById('pifr');
+  iframe.src='';iframe.classList.remove('on');
+  document.getElementById('pph').style.display='';
+  document.getElementById('pcls').classList.remove('on');
+  document.getElementById('plbl').textContent='Now playing';
+  document.querySelector('.card.active')?.classList.remove('active');
+  activeId=null;
+}
+
+function doFilter(){
+  const q=document.getElementById('srch').value.trim().toLowerCase();
+  currentList=q?MOVIES.filter(m=>m.title.toLowerCase().includes(q)):[...MOVIES];
+  buildGrid(currentList);
+  document.getElementById('nores').style.display=currentList.length===0?'block':'none';
+}
+
+buildGrid(MOVIES);
+loadAllImages();
+</script>
