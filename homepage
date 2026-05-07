@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peripheria EX Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* All your original Hub CSS stays exactly as it was */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html {
+            width: 100%; height: 100%; background-color: #050505;
+            color: white; font-family: 'IBM Plex Sans', sans-serif; overflow-x: hidden;
+        }
+        .page-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; padding-top: 10vh; }
+        .external-text { font-size: 60px; font-weight: 100; display: flex; justify-content: center; align-items: center; gap: 10px; height: 80px; margin: 10px 0; }
+        .external-text span { opacity: 0; transition: transform 0.8s ease-in-out, opacity 0.8s ease-in-out; }
+        .external-text span.animate { opacity: 1; transform: translateX(0) !important; }
+        .left-half { transform: translateX(-50px); }
+        .right-half { transform: translateX(50px); }
+        .glowing-text { font-size: 24px; margin-bottom: 50px; text-shadow: 0 0 10px #ffffff; text-align: center; }
+        .button-group { display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; font-family: 'Montserrat', sans-serif; max-width: 1000px; }
+        
+        .btn {
+            position: relative; display: flex; justify-content: center; align-items: center;
+            width: 14rem; height: 3.5rem; border-radius: 5rem;
+            background: linear-gradient(#000, #000), linear-gradient(135deg, #111, #000);
+            border: double 3px transparent; background-origin: border-box;
+            background-clip: content-box, border-box; cursor: pointer;
+            overflow: hidden; transition: 0.4s; box-shadow: 0 0 10px black;
+        }
+        .btn:hover { transform: scale(1.08); box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+        .btn strong { position: relative; z-index: 2; font-size: 14px; letter-spacing: 2px; color: #fff; text-transform: uppercase; }
+        #container-stars { position: absolute; z-index: 0; width: 100%; height: 100%; overflow: hidden; }
+        #stars { position: relative; width: 200rem; height: 200rem; }
+        #stars::after, #stars::before { content: ""; position: absolute; width: 100%; height: 100%; background-image: radial-gradient(white 1px, transparent 1%); background-size: 50px 50px; }
+        #stars::after { animation: rotateStars 90s linear infinite; }
+        #stars::before { animation: rotateStars 60s linear reverse infinite; opacity: 0.3; }
+        @keyframes rotateStars { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .disclaimer-container { max-width: 900px; width: 90%; padding: 30px 40px; border-radius: 16px; background: rgba(255, 255, 255, 0.05); border: 2px solid #000; text-align: center; animation: glowPulse 2s infinite alternate; font-family: 'Arial Black', Arial, sans-serif; margin-top: 400px; margin-bottom: 100px; }
+        @keyframes glowPulse { 0% { box-shadow: 0 0 10px white, 0 0 20px white inset; } 100% { box-shadow: 0 0 25px white, 0 0 40px white inset; } }
+        .disclaimer-container p { font-size: 0.825rem; font-weight: bold; line-height: 1.6; color: #fff; text-shadow: 0 0 10px black; }
+        .disclaimer-container p strong { font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 10px; }
+        @media (max-width: 768px) { .disclaimer-container { padding: 20px 15px; margin-top: 200px; } .external-text { font-size: 40px; } }
+    </style>
+</head>
+<body>
+
+    <div class="page-wrapper">
+        <div class="external-text" id="externalText">
+            <span class="left-half">D</span>
+            <span class="left-half">A</span>
+            <span class="left-half">R</span>
+            <span class="left-half">K</span>
+            <span>S</span>
+            <span>A</span>
+            <span class="right-half">G</span>
+            <span class="right-half">E</span>
+        </div>
+
+        <div class="glowing-text">What will it be today?</div>
+
+        <div class="button-group">
+            <button class="btn" type="button" onclick="runInBlank('entertainment')">
+                <strong>Entertainment</strong>
+                <div id="container-stars"><div id="stars"></div></div>
+            </button>
+
+            <button class="btn" type="button" onclick="runInBlank('proxies')">
+                <strong>pr(_)x!es</strong>
+                <div id="container-stars"><div id="stars"></div></div>
+            </button>
+
+            <button class="btn" type="button" onclick="runInBlank('games')">
+                <strong>G@MES</strong>
+                <div id="container-stars"><div id="stars"></div></div>
+            </button>
+        </div>
+
+        <div class="disclaimer-container">
+            <p>
+                <strong>Disclaimer</strong>
+                All content on this website is provided strictly for educational and informational purposes... [Full original disclaimer text]
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ORIGINAL HUB ANIMATION LOGIC
+        document.addEventListener('DOMContentLoaded', function() {
+            const letters = document.querySelectorAll('.external-text span');
+            letters.forEach((letter, index) => {
+                setTimeout(() => {
+                    letter.classList.add('animate');
+                }, index * 100);
+            });
+        });
+
+        // THE NEW ABOUT:BLANK REDIRECT LOGIC
+        function runInBlank(type) {
+            const win = window.open('about:blank', '_blank');
+            if (!win) {
+                alert("Please allow pop-ups for this site to work.");
+                return;
+            }
+
+            const sourceUrl = `https://raw.githubusercontent.com/nicheblock/darksage/refs/heads/main/${type}`;
+
+            const html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: auto; background: #000; }
+        .nb-footer { 
+            position: fixed; bottom: 5px; right: 5px; 
+            font-size: 9px; font-family: sans-serif; 
+            color: rgba(150,150,150,0.5); text-decoration: none; z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+<div id="render-target"></div>
+<a href="https://sites.google.com/view/niche-block-3" class="nb-footer" target="_blank">Code optimized by Niche-Block</a>
+<script>
+    fetch("${sourceUrl}")
+        .then(res => res.text())
+        .then(code => {
+            const container = document.getElementById('render-target');
+            container.innerHTML = code;
+            const scripts = Array.from(container.querySelectorAll("script"));
+            scripts.forEach(oldScript => {
+                const newScript = document.createElement("script");
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+        })
+        .catch(err => console.error("Error loading code:", err));
+<\/script>
+</body>
+</html>`;
+
+            win.document.open();
+            win.document.write(html);
+            win.document.close();
+        }
+    </script>
+</body>
+</html>
